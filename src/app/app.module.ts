@@ -1,71 +1,50 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { CoreModule } from './core/core.module';
-import { SharedModule } from './shared/shared.module';
-
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule } from '@angular/forms';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { HeaderComponent } from './layout/header/header.component';
-import { PageLoaderComponent } from './layout/page-loader/page-loader.component';
-import { SidebarComponent } from './layout/sidebar/sidebar.component';
-import { RightSidebarComponent } from './layout/right-sidebar/right-sidebar.component';
-import { AuthLayoutComponent } from './layout/app-layout/auth-layout/auth-layout.component';
-import { MainLayoutComponent } from './layout/app-layout/main-layout/main-layout.component';
-import { LocationStrategy, HashLocationStrategy } from '@angular/common';
-import { fakeBackendProvider } from './core/interceptor/fake-backend';
-import { ErrorInterceptor } from './core/interceptor/error.interceptor';
-import { JwtInterceptor } from './core/interceptor/jwt.interceptor';
-import {
-  PerfectScrollbarModule,
-  PERFECT_SCROLLBAR_CONFIG,
-  PerfectScrollbarConfigInterface,
-} from 'ngx-perfect-scrollbar';
+import { ExtraOptions, PreloadAllModules, RouterModule } from '@angular/router';
+import { MarkdownModule } from 'ngx-markdown';
+import { FuseModule } from '@fuse';
+import { FuseConfigModule } from '@fuse/services/config';
+import { FuseMockApiModule } from '@fuse/lib/mock-api';
+import { CoreModule } from 'app/core/core.module';
+import { appConfig } from 'app/core/config/app.config';
+import { mockApiServices } from 'app/mock-api';
+import { LayoutModule } from 'app/layout/layout.module';
+import { AppComponent } from 'app/app.component';
+import { appRoutes } from 'app/app.routing';
 
-import { ClickOutsideModule } from 'ng-click-outside';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-
-const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
-  suppressScrollX: true,
-  wheelPropagation: false,
+const routerConfig: ExtraOptions = {
+    preloadingStrategy       : PreloadAllModules,
+    scrollPositionRestoration: 'enabled'
 };
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HeaderComponent,
-    PageLoaderComponent,
-    SidebarComponent,
-    RightSidebarComponent,
-    AuthLayoutComponent,
-    MainLayoutComponent,
-  ],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    AppRoutingModule,
-    HttpClientModule,
-    ReactiveFormsModule,
-    PerfectScrollbarModule,
-    ClickOutsideModule,
+    declarations: [
+        AppComponent
+    ],
+    imports     : [
+        BrowserModule,
+        BrowserAnimationsModule,
+        RouterModule.forRoot(appRoutes, routerConfig),
 
-    // core & shared
-    CoreModule,
-    SharedModule,
-  ],
-  providers: [
-    { provide: LocationStrategy, useClass: HashLocationStrategy },
-    {
-      provide: PERFECT_SCROLLBAR_CONFIG,
-      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG,
-    },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    fakeBackendProvider,
-  ],
-  entryComponents: [],
-  bootstrap: [AppComponent],
+        // Fuse, FuseConfig & FuseMockAPI
+        FuseModule,
+        FuseConfigModule.forRoot(appConfig),
+        FuseMockApiModule.forRoot(mockApiServices),
+
+        // Core module of your application
+        CoreModule,
+
+        // Layout module of your application
+        LayoutModule,
+
+        // 3rd party modules that require global configuration via forRoot
+        MarkdownModule.forRoot({})
+    ],
+    bootstrap   : [
+        AppComponent
+    ]
 })
-export class AppModule {}
+export class AppModule
+{
+}
